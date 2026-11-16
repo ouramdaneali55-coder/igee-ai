@@ -297,6 +297,9 @@ body.light .toast{background:#fff;}
   </div>
 </div>
 
+<!-- Chargement du fichier de configuration externe -->
+<script src="config.js"></script>
+
 <script>
 const $=id=>document.getElementById(id);
 // Configuration par défaut pour Gemini
@@ -308,7 +311,15 @@ const DEFAULTS={
   max:2048,
   sys:''
 };
+
+// Récupération de la config depuis le localStorage
 let cfg=JSON.parse(localStorage.getItem('igee_cfg')||'null')||{...DEFAULTS};
+
+// Si le fichier config.js est chargé et contient une clé, on l'utilise en priorité
+if (window.GEMINI_API_KEY) {
+    cfg.key = window.GEMINI_API_KEY;
+}
+
 let chats=JSON.parse(localStorage.getItem('igee_chats')||'[]');
 let current=null, streaming=false, online=false, models=[], abortCtrl=null, demoIv=null;
 let usage={in:0,out:0};
