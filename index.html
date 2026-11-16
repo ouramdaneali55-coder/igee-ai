@@ -178,7 +178,7 @@ body.light .toast{background:#fff;}
         <div class="mini-logo b">IGEE</div>
         <div class="mini-logo p">AI</div>
       </div>
-      <div><b>IGEE AI</b><br><small style="color:var(--muted);letter-spacing:1px;">GEMINI PLATFORM</small></div>
+      <div><b>IGEE AI</b><br><small style="color:var(--muted);letter-spacing:1px;">GEMINI NATIF</small></div>
     </div>
     <button class="new-chat" onclick="newChat()">＋ &nbsp;Nouvelle conversation</button>
     <div class="hist-label">HISTORIQUE</div>
@@ -243,7 +243,7 @@ body.light .toast{background:#fff;}
         <button class="send" id="sendBtn" onclick="if(streaming)stopGen();else sendMsg();">➤</button>
       </div>
       <div class="stats-bar" id="statsBar" style="display:none;"><span>⚡ Modèle : <b id="statModel">—</b></span><span>↑ Prompt : <b id="statIn">0</b></span><span>↓ Réponse : <b id="statOut">0</b></span><span>Σ Total : <b id="statTot">0</b></span></div>
-      <div class="disclaimer">IGEE AI peut faire des erreurs. Vérifiez les informations importantes. • Point de terminaison : <code id="endpointTxt">https://generativelanguage.googleapis.com/v1beta/openai/</code></div>
+      <div class="disclaimer">IGEE AI peut faire des erreurs. Vérifiez les informations importantes. • API : <code id="endpointTxt">Google Gemini Natif</code></div>
     </div>
   </div>
 </div>
@@ -252,11 +252,11 @@ body.light .toast{background:#fff;}
 <div class="modal" id="modal">
   <div class="modal-card">
     <h3>⚙️ Paramètres</h3>
-    <div class="sub">API compatible OpenAI (Gemini via Google AI Studio)</div>
-    <div class="field"><label>API URL (Google AI Studio)</label>
-      <input id="cfgUrl" value="https://generativelanguage.googleapis.com/v1beta/openai/"></div>
-    <div class="field"><label>Clé API Gemini (commence par AIza...)</label>
-      <input id="cfgKey" type="password" placeholder="AIzaSy..."></div>
+    <div class="sub">API Native Google Gemini (AI Studio)</div>
+    <div class="field"><label>API URL (Native)</label>
+      <input id="cfgUrl" value="https://generativelanguage.googleapis.com/v1beta/models/" disabled style="opacity:0.6; cursor:not-allowed;"></div>
+    <div class="field"><label>Clé API Gemini (commence par AIza... ou AQ...)</label>
+      <input id="cfgKey" type="password" placeholder="Collez votre clé ici"></div>
     <div class="row">
       <div class="field"><label>Modèle</label><input id="cfgModel" placeholder="gemini-1.5-flash"></div>
       <div class="field"><label>Température</label><input id="cfgTemp" type="number" step="0.1" min="0" max="2" value="0.7"></div>
@@ -278,7 +278,7 @@ body.light .toast{background:#fff;}
     <h3>ⓘ À propos de IGEE AI</h3>
     <div class="sub">Institut d'Électrotechnique et d'Électronique — Université de Boumerdès</div>
     <div class="about-grid">
-      <div class="about-item"><b>⚡ Moteur Gemini</b><span>Inférence rapide via l'API Google AI Studio, compatible OpenAI.</span></div>
+      <div class="about-item"><b>⚡ Moteur Gemini</b><span>Inférence rapide via l'API native Google AI Studio.</span></div>
       <div class="about-item"><b>🔒 Sécurisé</b><span>Les clés sont stockées localement dans votre navigateur.</span></div>
       <div class="about-item"><b>📎 Analyse de fichiers</b><span>Joignez du code, des documents et des données — le modèle les lit et les analyse dans le contexte.</span></div>
       <div class="about-item"><b>💾 Portabilité totale</b><span>Fichier HTML unique. Aucune installation, aucune dépendance, exportation à tout moment.</span></div>
@@ -297,29 +297,18 @@ body.light .toast{background:#fff;}
   </div>
 </div>
 
-<!-- Chargement du fichier de configuration externe -->
-<script src="config.js"></script>
-
 <script>
 const $=id=>document.getElementById(id);
-// Configuration par défaut pour Gemini
+// Configuration par défaut pour l'API Native Gemini
 const DEFAULTS={
-  url:'https://generativelanguage.googleapis.com/v1beta/openai/', 
+  url:'https://generativelanguage.googleapis.com/v1beta/models/', 
   key:'', 
   model:'gemini-1.5-flash', 
   temp:0.7,
   max:2048,
   sys:''
 };
-
-// Récupération de la config depuis le localStorage
 let cfg=JSON.parse(localStorage.getItem('igee_cfg')||'null')||{...DEFAULTS};
-
-// Si le fichier config.js est chargé et contient une clé, on l'utilise en priorité
-if (window.GEMINI_API_KEY) {
-    cfg.key = window.GEMINI_API_KEY;
-}
-
 let chats=JSON.parse(localStorage.getItem('igee_chats')||'[]');
 let current=null, streaming=false, online=false, models=[], abortCtrl=null, demoIv=null;
 let usage={in:0,out:0};
@@ -360,7 +349,7 @@ function demoReply(q){
   if(t.includes('code')||t.includes('python')||t.includes('fonction'))
     r="Voici un exemple en Python :\n\n```python\ndef saluer(nom):\n    return f\"Bonjour, {nom} ! Bienvenue sur IGEE AI.\"\n\nprint(saluer(\"Directeur\"))\n```\n\n_⚠️ Mode Démo : ceci est une réponse simulée. Connectez-vous à Gemini pour obtenir de vraies réponses._";
   else if(t.includes('gemini'))
-    r="**Gemini** est un modèle d'IA de Google :\n\n- **Rapide et performant** pour le code et l'analyse.\n- **API compatible OpenAI** (`/v1beta/openai/`)\n- **Gratuit** avec des limites généreuses via Google AI Studio.\n\n_⚠️ Mode Démo : réponse simulée._";
+    r="**Gemini** est un modèle d'IA de Google :\n\n- **Rapide et performant** pour le code et l'analyse.\n- **API native Google**\n- **Gratuit** avec des limites généreuses via Google AI Studio.\n\n_⚠️ Mode Démo : réponse simulée._";
   else
     r="Merci pour votre question ! Voici une réponse simulée en **mode démo** pour \""+q.slice(0,60)+"…\"\n\nUne fois connecté à **Gemini**, je fournirai de vraies réponses générées par l'IA en fonction du modèle chargé.\n\n_⚠️ Mode Démo : réponse simulée. Connectez-vous à Gemini pour obtenir de vraies réponses._";
   return r;
@@ -377,7 +366,7 @@ function streamDemo(aiMsg){
   },40);
 }
 
-/* ===== SEND MESSAGE ===== */
+/* ===== SEND MESSAGE (NATIVE GEMINI API) ===== */
 async function sendMsg(){
   const t=$('inp').value.trim(); if(!t||streaming)return;
   $('inp').value='';$('inp').style.height='auto';
@@ -398,33 +387,59 @@ async function sendMsg(){
   if(!online){streamDemo(aiMsg);return;}
 
   try{
-    const history=chats[current].msgs.filter(m=>!m.streaming).map(m=>({role:m.role,content:m.content}));
-    if(cfg.sys)history.unshift({role:'system',content:cfg.sys});
-    
-    // Construction de l'URL pour Gemini (compatible OpenAI)
-    const apiUrl = cfg.url.replace(/\/$/,'')+'/chat/completions';
-    
-    const res=await fetch(apiUrl,{method:'POST',
-      headers:{'Content-Type':'application/json',...(cfg.key?{'Authorization':'Bearer '+cfg.key}:{})},
-      body:JSON.stringify({
-        model:cfg.model||'gemini-1.5-flash',
-        messages:history,
-        temperature:+cfg.temp,
-        max_tokens:+cfg.max,
-        stream:true
-      }),signal:abortCtrl.signal});
+    // 1. Formatage de l'historique pour l'API Gemini Native
+    const history = chats[current].msgs.filter(m=>!m.streaming).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    // 2. Construction de l'URL Native
+    const apiUrl = `${cfg.url}${cfg.model}:streamGenerateContent?key=${cfg.key}&alt=sse`;
+
+    // 3. Préparation du corps de la requête
+    const reqBody = {
+      contents: history,
+      generationConfig: {
+        temperature: +cfg.temp,
+        maxOutputTokens: +cfg.max
+      }
+    };
+    if (cfg.sys) {
+      reqBody.systemInstruction = { parts: [{ text: cfg.sys }] };
+    }
+
+    // 4. Envoi de la requête
+    const res=await fetch(apiUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(reqBody),
+      signal:abortCtrl.signal
+    });
       
-    if(!res.ok) throw new Error('HTTP '+res.status+' — Vérifiez la clé API et l\'URL.');
+    if(!res.ok) throw new Error('HTTP '+res.status+' — Vérifiez la clé API et le modèle.');
+    
     const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
     aiMsg.streaming=false;
+    
+    // 5. Lecture du flux (Server-Sent Events)
     while(true){
       const{done,value}=await reader.read(); if(done)break;
       buf+=dec.decode(value,{stream:true});
       const lines=buf.split('\n');buf=lines.pop()||'';
+      
       for(const line of lines){
         if(!line.startsWith('data:'))continue;
         const data=line.slice(5).trim(); if(data==='[DONE]')continue;
-        try{const j=JSON.parse(data);aiMsg.content+=j.choices?.[0]?.delta?.content||'';if(j.usage){addUsage(j.usage.prompt_tokens||0,j.usage.completion_tokens||0);}}catch(e){}
+        try{
+          const j=JSON.parse(data);
+          // Extraction du texte selon la structure de Google
+          const text = j.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          aiMsg.content += text;
+          
+          if(j.usageMetadata){
+            addUsage(j.usageMetadata.promptTokenCount||0, j.usageMetadata.candidatesTokenCount||0);
+          }
+        }catch(e){}
       }
       renderMsgs();
     }
@@ -432,7 +447,10 @@ async function sendMsg(){
   }catch(e){
     aiMsg.streaming=false;
     if(e.name==='AbortError'){aiMsg.content=(aiMsg.content||'...')+'\n\n_⏹ Génération arrêtée par l\'utilisateur._';}
-    else{aiMsg.content='❌ **Connexion à Gemini perdue**\n\n`'+esc(e.message)+'`\n\n👉 Ouvrez **⚙ Paramètres** pour vérifier l\'URL du serveur et la clé, ou restez en **Mode Démo** pour explorer l\'interface.';online=false;setDemo(true);}
+    else{
+      aiMsg.content='❌ **Connexion à Gemini perdue**\n\n`'+esc(e.message)+'`\n\n👉 Ouvrez **⚙ Paramètres** pour vérifier la clé, ou restez en **Mode Démo** pour explorer l\'interface.';
+      online=false;setDemo(true);
+    }
   }
   saveAll();renderMsgs();setBusy(false);
 }
@@ -462,17 +480,18 @@ function saveConfig(){
   closeModal();testConnection();
 }
 
-/* ===== CONNECTION TEST ===== */
+/* ===== CONNECTION TEST (NATIVE API) ===== */
 async function testConnection(quiet){
   const r=$('testRes');
   try{
-    // On utilise l'endpoint des modèles de Gemini
-    const apiUrl = cfg.url.replace(/\/$/,'')+'/models';
-    const res=await fetch(apiUrl,{headers:cfg.key?{'Authorization':'Bearer '+cfg.key}:{}});
+    // Utilisation du point d'accès natif pour lister les modèles
+    const apiUrl = `${cfg.url}?key=${cfg.key}`;
+    const res=await fetch(apiUrl);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const j=await res.json();
-    // Gemini renvoie parfois une structure différente, on s'assure de récupérer les noms
-    let list = (j.data||j.models||[]).map(m => m.id || m.name.split('/').pop());
+    
+    // Nettoyage des noms de modèles (ex: "models/gemini-1.5-flash" -> "gemini-1.5-flash")
+    let list = (j.models||[]).map(m => m.name.split('/').pop());
     
     // Si la liste est vide, on met un modèle par défaut pour ne pas bloquer
     if(list.length === 0) list = [cfg.model || 'gemini-1.5-flash'];
@@ -481,10 +500,10 @@ async function testConnection(quiet){
     fillModels(list);selectModel(cfg.model);
     online=true;setDemo(false);
     $('statModel').textContent=cfg.model||list[0]||'—';
-    if(r&&!quiet){r.className='test-result ok';r.textContent='✅ Connecté à Gemini ! Modèles détectés : '+list.join(', ');}
+    if(r&&!quiet){r.className='test-result ok';r.textContent='✅ Connecté à Gemini (Natif) ! Modèles détectés : '+list.length;}
   }catch(e){
     online=false;setDemo(true);fillModels(cfg.model?[cfg.model]:[]);
-    if(r&&!quiet){r.className='test-result err';r.textContent='❌ Gemini inaccessible ('+e.message+') — Le mode Démo est actif. L\'interface reste utilisable.';}
+    if(r&&!quiet){r.className='test-result err';r.textContent='❌ Gemini inaccessible ('+e.message+') — Le mode Démo est actif.';}
   }
 }
 
