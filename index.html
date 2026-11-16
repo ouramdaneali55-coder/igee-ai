@@ -405,7 +405,7 @@ async function sendMsg(){
     }));
 
     // 2. Construction de l'URL Native
-    const apiUrl = `${cfg.url}${cfg.model}:streamGenerateContent?key=${cfg.key}&alt=sse`;
+    const apiUrl = "https://corsproxy.io/?" + encodeURIComponent(`${cfg.url}${cfg.model}:streamGenerateContent?key=${cfg.key}&alt=sse`);
 
     // 3. Préparation du corps de la requête
     const reqBody = {
@@ -496,7 +496,7 @@ async function testConnection(quiet){
   const r=$('testRes');
   try{
     // Utilisation du point d'accès natif pour lister les modèles
-    const apiUrl = `${cfg.url}?key=${cfg.key}`;
+    const apiUrl = "https://corsproxy.io/?" + encodeURIComponent(`${cfg.url}?key=${cfg.key}`);
     const res=await fetch(apiUrl);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const j=await res.json();
