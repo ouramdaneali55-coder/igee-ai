@@ -1,340 +1,602 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IGEE AI — Intelligent Assistant</title>
+<title>IGEE AI — Assistant Intelligent (Gemini Edition)</title>
 <style>
-    :root {
-        --bg-sidebar: #202123;
-        --bg-main: #343541;
-        --bg-bubble-user: #343541;
-        --bg-bubble-ai: #444654;
-        --text-main: #ececf1;
-        --text-muted: #8e8ea0;
-        --border: #4d4d4f;
-        --accent: #10a37f;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    body { background: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+:root{
+  --bg:#0a0e17; --bg2:#0f1420; --panel:#141a2a; --panel2:#1a2236;
+  --border:#263250; --text:#e8edf7; --muted:#8b96ad;
+  --blue:#2f7bff; --purple:#8b5cf6; --cyan:#22d3ee; --amber:#fbbf24;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;}
+html,body{height:100%;background:var(--bg);color:var(--text);overflow:hidden;}
+.app{display:flex;height:100vh;}
 
-    /* Logo Animations */
-    @keyframes logoFloat { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(-2deg); } }
-    @keyframes logoFloatRight { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(2deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* ===== SIDEBAR ===== */
+.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;transition:margin .35s ease;z-index:40;}
+.sidebar.closed{margin-left:-280px;}
+.side-head{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.mini-logo{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.68rem;color:#fff;}
+.mini-logo.b{background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 4px 14px rgba(47,123,255,.4);}
+.mini-logo.p{background:linear-gradient(135deg,#a855f7,#6d28d9);box-shadow:0 4px 14px rgba(139,92,246,.4);}
+.new-chat{margin:14px;padding:12px;border:none;border-radius:12px;cursor:pointer;font-weight:700;font-size:.9rem;
+  color:#fff;background:linear-gradient(135deg,var(--blue),#1d6ff2);display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;
+  box-shadow:0 4px 16px rgba(47,123,255,.3);}
+.new-chat:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(47,123,255,.5);}
+.hist-label{padding:6px 18px 8px;font-size:.68rem;letter-spacing:2px;color:var(--muted);}
+.chat-list{flex:1;overflow-y:auto;padding:0 10px;}
+.chat-item{padding:10px 12px;border-radius:10px;cursor:pointer;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem;margin-bottom:3px;transition:.15s;}
+.chat-item:hover{background:var(--panel);color:var(--text);}
+.chat-item.active{background:var(--panel2);color:var(--text);border-left:3px solid var(--blue);padding-left:9px;}
+.side-user{padding:14px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.user-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#6d28d9);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;}
+.side-user b{font-size:.85rem;display:block;}
+.side-user small{color:var(--muted);font-size:.72rem;}
 
-    /* Sidebar */
-    .sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border); transition: transform 0.3s; z-index: 10; }
-    .sidebar-header { padding: 15px; }
-    .new-chat-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); color: #fff; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: 0.2s; }
-    .new-chat-btn:hover { background: rgba(255,255,255,0.1); }
-    .chat-history { flex: 1; overflow-y: auto; padding: 10px; }
-    .history-item { padding: 10px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; }
-    .history-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .sidebar-footer { padding: 15px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); text-align: center; }
+/* ===== MAIN ===== */
+.main{flex:1;display:flex;flex-direction:column;position:relative;min-width:0;}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);background:rgba(10,14,23,.9);backdrop-filter:blur(8px);flex-wrap:wrap;}
+.burger{background:var(--panel);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:10px;cursor:pointer;font-size:1.05rem;transition:.2s;}
+.burger:hover{border-color:var(--blue);}
+.model-select{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:11px;
+  padding:9px 14px;font-size:.84rem;cursor:pointer;outline:none;max-width:280px;transition:.2s;}
+.model-select:hover,.model-select:focus{border-color:var(--blue);}
+.demo-chip{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--amber);
+  border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);border-radius:20px;padding:6px 13px;}
+.demo-chip.off{display:none;}
+.demo-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:blink 1.6s infinite;}
+@keyframes blink{50%{opacity:.25}}
+.topbar-right{margin-left:auto;display:flex;gap:8px;}
+.btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 15px;border-radius:11px;cursor:pointer;font-size:.83rem;transition:.2s;display:flex;align-items:center;gap:6px;}
+.btn-ghost:hover{border-color:var(--blue);}
 
-    /* Main Chat */
-    .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; }
-    .chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-    
-    /* Welcome Screen with Logos */
-    .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; animation: fadeIn 0.8s ease; }
-    .logo-container { display: flex; gap: 20px; align-items: center; justify-content: center; margin-bottom: 20px; }
-    
-    .igee-logo-3d {
-        width: 90px; height: 90px; border-radius: 22px;
-        display: flex; align-items: center; justify-content: center;
-        position: relative;
-        background: linear-gradient(180deg,#4A90E2 0%,#1877F2 50%,#0C5CBF 100%);
-        box-shadow: 0 8px 24px rgba(24,119,242,.4),inset 0 3px 6px rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.2);
-        overflow: hidden;
-        animation: logoFloat 3s ease-in-out infinite;
-    }
-    .ai-logo-3d {
-        width: 90px; height: 90px; border-radius: 22px;
-        display: flex; align-items: center; justify-content: center;
-        position: relative;
-        background: linear-gradient(180deg,#9c27b0 0%,#673ab7 50%,#311b92 100%);
-        box-shadow: 0 8px 24px rgba(156,39,176,.4),inset 0 3px 6px rgba(255,255,255,.3),inset 0 -3px 6px rgba(0,0,0,.2);
-        overflow: hidden;
-        animation: logoFloatRight 3s ease-in-out infinite;
-        animation-delay: 0.5s;
-    }
-    .igee-logo-3d::before, .ai-logo-3d::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
-        background: linear-gradient(180deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,0) 100%);
-        border-radius: 22px 22px 50% 50%; pointer-events: none;
-    }
-    .igee-logo-3d svg, .ai-logo-3d svg { width: 100%; height: 100%; position: relative; z-index: 1; }
+/* ===== LOGO / HERO ===== */
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:20px;overflow-y:auto;}
+.logo-wrap{display:flex;gap:16px;animation:floaty 5s ease-in-out infinite;}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.logo{width:96px;height:96px;border-radius:24px;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1.55rem;color:#fff;position:relative;isolation:isolate;animation:floaty 5s ease-in-out infinite;}
+.logo.ai{animation-delay:.35s;}
+.logo::before{content:'';position:absolute;inset:-3px;border-radius:27px;z-index:-1;filter:blur(16px);opacity:.65;animation:glowPulse 2.6s ease-in-out infinite;}
+.logo.ai::before{animation-delay:1.3s;}
+@keyframes glowPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+.logo span{animation:shineText 3.2s linear infinite;background:linear-gradient(110deg,#fff 40%,#cfe0ff 50%,#fff 60%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+@keyframes shineText{to{background-position:-220% 0}}
+.hero h1{font-size:2.1rem;font-weight:700;background:linear-gradient(90deg,var(--blue),var(--purple),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-align:center;}
+.hero p{color:var(--muted);text-align:center;max-width:520px;line-height:1.65;}
+.suggestions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:860px;width:100%;margin-top:8px;}
+.sug{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.2s;}
+.sug:hover{border-color:var(--blue);transform:translateY(-3px);background:var(--panel2);}
+.sug b{display:block;font-size:.88rem;margin-bottom:5px;}
+.sug small{color:var(--muted);font-size:.76rem;line-height:1.45;display:block;}
+@media(max-width:900px){.suggestions{grid-template-columns:repeat(2,1fr);}}
 
-    .welcome-title { font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #fff; }
-    .welcome-subtitle { font-size: 14px; color: var(--text-muted); text-align: center; max-width: 400px; }
+/* ===== MESSAGES ===== */
+.messages{flex:1;overflow-y:auto;padding:28px 10%;display:none;flex-direction:column;gap:22px;}
+.msg{display:flex;gap:12px;animation:fadeUp .35s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.avatar{min-width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;}
+.avatar.u{background:linear-gradient(135deg,#475569,#334155);}
+.avatar.a{background:linear-gradient(135deg,var(--blue),var(--purple));}
+.bubble{padding:13px 17px;border-radius:14px;line-height:1.7;font-size:.95rem;max-width:100%;overflow-wrap:break-word;}
+.msg.user .bubble{background:var(--panel2);border:1px solid var(--border);border-top-left-radius:3px;}
+.msg.assistant .bubble{background:var(--panel);border:1px solid var(--border);border-top-left-radius:3px;width:100%;}
+.bubble pre{background:#070b13;border:1px solid var(--border);border-radius:10px;padding:12px;overflow-x:auto;margin:10px 0;}
+.bubble code{font-family:Consolas,monospace;font-size:.87rem;}
+.thinking{color:var(--muted);font-style:italic;}
 
-    /* Message Bubbles */
-    .message { width: 100%; max-width: 800px; padding: 20px; display: flex; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .message.user { background: var(--bg-bubble-user); }
-    .message.ai { background: var(--bg-bubble-ai); }
-    .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-    .user .avatar { background: #1877f2; color: #fff; }
-    .ai .avatar { background: var(--accent); color: #fff; }
-    .message-content { flex: 1; line-height: 1.6; font-size: 15px; white-space: pre-wrap; word-wrap: break-word; }
+/* ===== COMPOSER ===== */
+.composer{padding:14px 10% 20px;}
+.input-box{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:8px 8px 8px 16px;display:flex;align-items:flex-end;gap:10px;transition:.2s;}
+.input-box:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,123,255,.15);}
+#inp{flex:1;background:none;border:none;outline:none;color:var(--text);resize:none;font-size:.95rem;max-height:160px;padding:9px 0;font-family:inherit;}
+.mic{width:40px;height:40px;border:none;border-radius:12px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:1rem;transition:.2s;flex-shrink:0;}
+.mic:hover{color:var(--text);border-color:var(--blue);}
+.mic.rec{color:#f87171;border-color:#f87171;animation:blink 1s infinite;}
+.send{width:42px;height:42px;border:none;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
+.send:hover:not(:disabled){transform:scale(1.07);box-shadow:0 4px 18px rgba(139,92,246,.5);}
+.send:disabled{opacity:.4;cursor:not-allowed;}
+.disclaimer{text-align:center;font-size:.72rem;color:var(--muted);margin-top:10px;}
+.attach-btn{width:40px;height:40px;border:none;border-radius:12px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:1.05rem;transition:.2s;flex-shrink:0;}
+.attach-btn:hover{color:var(--text);border-color:var(--blue);}
+.attachments{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.att-chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:6px 8px 6px 11px;font-size:.78rem;max-width:260px;}
+.att-chip .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;}
+.att-chip .sz{color:var(--muted);font-size:.7rem;flex-shrink:0;}
+.att-chip .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;padding:0 2px;flex-shrink:0;}
+.att-chip .rm:hover{color:#f87171;}
+.att-chip img{width:26px;height:26px;border-radius:6px;object-fit:cover;flex-shrink:0;}
+.drag-hint{display:none;text-align:center;font-size:.78rem;color:var(--cyan);border:1px dashed rgba(34,211,238,.5);border-radius:12px;padding:8px;margin-bottom:8px;}
+.input-box.drag{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.2);}
+.disclaimer code{color:var(--cyan);}
 
-    /* Input Area */
-    .input-area { padding: 20px; background: var(--bg-main); display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .input-wrapper { width: 100%; max-width: 800px; position: relative; background: var(--bg-bubble-ai); border: 1px solid var(--border); border-radius: 12px; padding: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: flex; align-items: flex-end; gap: 10px; }
-    
-    /* Bouton Trombone */
-    .attach-btn { width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 20px; transition: 0.2s; flex-shrink: 0; margin-bottom: 2px;}
-    .attach-btn:hover { color: #fff; }
-    
-    .input-wrapper textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; outline: none; font-size: 16px; min-height: 24px; max-height: 200px; padding-top: 5px;}
-    .send-btn { width: 32px; height: 32px; background: var(--accent); border: none; border-radius: 6px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; margin-bottom: 2px;}
-    .send-btn:hover { background: #0d8a6a; }
-    .send-btn:disabled { background: #555; cursor: not-allowed; }
-    .disclaimer { font-size: 11px; color: var(--text-muted); margin-top: 10px; text-align: center; }
+/* ===== PRO FEATURES ===== */
+.msg-actions{display:flex;gap:6px;margin-top:8px;}
+.mact{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:3px 9px;font-size:.7rem;cursor:pointer;transition:.15s;}
+.mact:hover{color:var(--text);border-color:var(--blue);}
+.side-tools{display:flex;gap:6px;padding:0 14px 10px;}
+.side-tools button{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:9px;padding:7px;font-size:.72rem;cursor:pointer;transition:.15s;}
+.side-tools button:hover{color:var(--text);border-color:var(--blue);}
+.stats-bar{display:flex;justify-content:center;gap:16px;font-size:.7rem;color:var(--muted);margin-top:6px;flex-wrap:wrap;}
+.stats-bar b{color:var(--cyan);font-weight:600;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel2);border:1px solid var(--blue);color:var(--text);padding:10px 20px;border-radius:12px;font-size:.83rem;z-index:99;opacity:0;pointer-events:none;transition:.3s;box-shadow:0 8px 30px rgba(0,0,0,.4);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+kbd{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.72rem;font-family:inherit;}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;}
+.about-item{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px;font-size:.8rem;}
+.about-item b{display:block;margin-bottom:3px;font-size:.82rem;}
+.about-item span{color:var(--muted);font-size:.74rem;line-height:1.45;}
+.shortcut-row{display:flex;justify-content:space-between;align-items:center;padding:7px 2px;font-size:.8rem;color:var(--muted);border-bottom:1px solid var(--border);}
+.shortcut-row:last-child{border:none;}
+/* ===== LIGHT THEME ===== */
+body.light{--bg:#f2f5fa;--bg2:#ffffff;--panel:#e9eef6;--panel2:#dfe7f2;--border:#c8d4e6;--text:#1a2436;--muted:#5b6b85;}
+body.light .topbar{background:rgba(242,245,250,.9);}
+body.light .burger,body.light .model-select,body.light .btn-ghost,body.light .att-chip,body.light .side-tools button{background:#fff;}
+body.light .bubble pre{background:#0a0e17;}
+body.light .chat-item:hover,body.light .new-chat,body.light .input-box,body.light .mic,body.light .attach-btn{background:#fff;}
+body.light .new-chat{color:#fff;}
+body.light .chat-item.active{background:var(--panel2);}
+body.light .toast{background:#fff;}
 
-    /* Loading Dots */
-    .typing-dots { display: flex; gap: 4px; align-items: center; height: 24px; }
-    .typing-dots span { width: 6px; height: 6px; background: #fff; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .sidebar { position: absolute; height: 100%; transform: translateX(-100%); }
-        .sidebar.active { transform: translateX(0); }
-    }
+/* ===== MODAL ===== */
+.modal{position:fixed;inset:0;background:rgba(5,8,15,.72);display:none;align-items:center;justify-content:center;z-index:50;backdrop-filter:blur(5px);}
+.modal.open{display:flex;animation:fadeUp .25s ease;}
+.modal-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;width:480px;max-width:92vw;padding:26px;max-height:85vh;overflow-y:auto;}
+.modal-card h3{margin-bottom:4px;}
+.modal-card .sub{color:var(--muted);font-size:.83rem;margin-bottom:18px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:6px;}
+.field input,.field select{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:.9rem;outline:none;transition:.2s;font-family:inherit;}
+.field input:focus,.field select:focus{border-color:var(--blue);}
+.row{display:flex;gap:10px;}
+.row .field{flex:1;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.btn-primary{flex:1;background:linear-gradient(135deg,var(--blue),var(--purple));border:none;color:#fff;padding:11px;border-radius:11px;cursor:pointer;font-weight:600;transition:.2s;}
+.btn-primary:hover{box-shadow:0 4px 20px rgba(139,92,246,.4);}
+.test-result{font-size:.8rem;margin-top:10px;padding:9px 12px;border-radius:9px;display:none;line-height:1.5;}
+.test-result.ok{display:block;background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+.test-result.err{display:block;background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+@media(max-width:760px){
+  .messages,.composer{padding-left:4%;padding-right:4%;}
+  .sidebar{position:absolute;height:100%;}
+  .suggestions{grid-template-columns:repeat(2,1fr);}
+  .hero h1{font-size:1.5rem;}
+}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
 </style>
-<script src="config.js"></script>
 </head>
 <body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <div style="display:flex;gap:8px;">
+        <div class="mini-logo b">IGEE</div>
+        <div class="mini-logo p">AI</div>
+      </div>
+      <div><b>IGEE AI</b><br><small style="color:var(--muted);letter-spacing:1px;">GEMINI PLATFORM</small></div>
+    </div>
+    <button class="new-chat" onclick="newChat()">＋ &nbsp;Nouvelle conversation</button>
+    <div class="hist-label">HISTORIQUE</div>
+    <div class="chat-list" id="chatList"></div>
+    <div class="side-tools">
+      <button onclick="clearHistory()">🗑 Effacer l'historique</button>
+      <button onclick="exportAll()">📦 Tout exporter</button>
+    </div>
+    <div class="side-user">
+      <div class="user-av">IG</div>
+      <div><b>IGEE AI</b><small id="userStatus">Admin • Gemini Prêt</small></div>
+    </div>
+  </aside>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <button class="new-chat-btn" onclick="startNewChat()">
-                <span>+</span> New chat
-            </button>
-        </div>
-        <div class="chat-history" id="chat-history"></div>
-        <div class="sidebar-footer">IGEE AI • Powered by AI</div>
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <button class="burger" onclick="document.getElementById('sidebar').classList.toggle('closed')">☰</button>
+      <select class="model-select" id="modelSel" onchange="selectModel(this.value)">
+        <option value="">⚡ — Sélectionner un modèle —</option>
+      </select>
+      <div class="demo-chip off" id="demoChip"><span class="demo-dot"></span>Mode Démo (hors ligne)</div>
+      <div class="topbar-right">
+        <button class="btn-ghost" onclick="testConnection()">↻ Tester Gemini</button>
+        <button class="btn-ghost" onclick="exportChat()" title="Télécharger cette conversation">💾 Exporter</button>
+        <button class="btn-ghost" onclick="openAbout()" title="À propos & raccourcis">ⓘ</button>
+        <button class="btn-ghost" onclick="toggleTheme()" title="Changer de thème" id="themeBtn">🌙</button>
+        <button class="btn-ghost" onclick="openModal()">⚙ Paramètres</button>
+      </div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="main-chat">
-        <div class="chat-container" id="chat-container">
-            <!-- Welcome Screen -->
-            <div class="welcome-screen" id="welcome-screen">
-                <div class="logo-container">
-                    <div class="igee-logo-3d">
-                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                            <text x="256" y="295" font-family="'Segoe UI',Arial,sans-serif" font-size="170" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-6">IGEE</text>
-                        </svg>
-                    </div>
-                    <div class="ai-logo-3d">
-                        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                            <text x="256" y="295" font-family="'Segoe UI',Arial,sans-serif" font-size="200" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-6">AI</text>
-                        </svg>
-                    </div>
-                </div>
-                <h1 class="welcome-title">How can I help you today?</h1>
-                <p class="welcome-subtitle">I am your intelligent assistant for research, projects, and development at IGEE.</p>
-            </div>
+    <!-- HERO -->
+    <div class="hero" id="hero">
+      <div class="logo-wrap">
+        <div class="logo" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 8px 30px rgba(47,123,255,.45);">
+          <span>IGEE</span>
         </div>
-
-        <!-- Input Area -->
-        <div class="input-area">
-            <div class="input-wrapper">
-                <!-- Bouton pour joindre un fichier -->
-                <input type="file" id="file-upload" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelect(event)">
-                <label for="file-upload" class="attach-btn" title="Attach an image or PDF">📎</label>
-                
-                <textarea id="prompt-input" placeholder="Ask IGEE AI a question..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
-                <button class="send-btn" id="send-btn" onclick="sendMessage()">↑</button>
-            </div>
-            <div class="disclaimer">IGEE AI can make mistakes. Consider checking important information.</div>
+        <div class="logo ai" style="background:linear-gradient(135deg,#a855f7,#6d28d9);box-shadow:0 8px 30px rgba(139,92,246,.45);">
+          <span>AI</span>
         </div>
+      </div>
+      <h1>Comment puis-je vous aider aujourd'hui ?</h1>
+      <p>Votre assistant intelligent pour la recherche, les projets et le développement à l'<b>Institut d'Électrotechnique et d'Électronique</b> (IGEE).</p>
+      <div class="suggestions">
+        <div class="sug" onclick="suggest('Résume les dernières avancées en ')"><b>🔬 Recherche</b><small>Résume les dernières avancées en…</small></div>
+        <div class="sug" onclick="suggest('Écris une fonction Python qui ')"><b>💻 Code</b><small>Écris une fonction Python qui…</small></div>
+        <div class="sug" onclick="suggest('Explique le principe de ')"><b>📊 Analyse</b><small>Explique le principe de…</small></div>
+        <div class="sug" onclick="suggest('Aide-moi à rédiger un rapport sur ')"><b>📝 Rédaction</b><small>Aide-moi à rédiger un rapport sur…</small></div>
+      </div>
     </div>
 
-    <script>
-        // AI ENGINE CONFIGURATION
-        const AI_BACKEND = "gemini"; 
-        let currentChatId = Date.now().toString();
-        let chatHistory = JSON.parse(localStorage.getItem('igee_ai_history')) || {};
-        let selectedFile = null; // Variable pour stocker le fichier joint
+    <div class="messages" id="messages"></div>
 
-        window.onload = () => { renderHistory(); autoResizeInput(); };
-        function autoResizeInput() { const tx = document.getElementById('prompt-input'); tx.style.height = 'auto'; tx.style.height = (tx.scrollHeight) + 'px'; }
-        document.getElementById('prompt-input').addEventListener('input', autoResizeInput);
+    <div class="composer">
+      <input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(this.files)">
+      <div class="drag-hint" id="dragHint">⬇ Déposez vos fichiers ici pour les joindre</div>
+      <div class="attachments" id="attachments"></div>
+      <div class="input-box" id="inputBox">
+        <button class="attach-btn" onclick="$('fileInput').click()" title="Joindre des fichiers">📎</button>
+        <textarea id="inp" rows="1" placeholder="Posez une question à IGEE AI..."></textarea>
+        <button class="mic" id="micBtn" onclick="toggleMic()" title="Entrée vocale">🎙</button>
+        <button class="send" id="sendBtn" onclick="if(streaming)stopGen();else sendMsg();">➤</button>
+      </div>
+      <div class="stats-bar" id="statsBar" style="display:none;"><span>⚡ Modèle : <b id="statModel">—</b></span><span>↑ Prompt : <b id="statIn">0</b></span><span>↓ Réponse : <b id="statOut">0</b></span><span>Σ Total : <b id="statTot">0</b></span></div>
+      <div class="disclaimer">IGEE AI peut faire des erreurs. Vérifiez les informations importantes. • Point de terminaison : <code id="endpointTxt">https://generativelanguage.googleapis.com/v1beta/openai/</code></div>
+    </div>
+  </div>
+</div>
 
-        // GESTION DU FICHIER
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 10 * 1024 * 1024) { // Limite à 10 Mo
-                alert("File too large (max 10 MB).");
-                e.target.value = '';
-                return;
-            }
-            selectedFile = file;
-            document.getElementById('prompt-input').placeholder = `File attached: ${file.name}`;
-        }
+<!-- SETTINGS MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <h3>⚙️ Paramètres</h3>
+    <div class="sub">API compatible OpenAI (Gemini via Google AI Studio)</div>
+    <div class="field"><label>API URL (Google AI Studio)</label>
+      <input id="cfgUrl" value="https://generativelanguage.googleapis.com/v1beta/openai/"></div>
+    <div class="field"><label>Clé API Gemini (commence par AIza...)</label>
+      <input id="cfgKey" type="password" placeholder="AIzaSy..."></div>
+    <div class="row">
+      <div class="field"><label>Modèle</label><input id="cfgModel" placeholder="gemini-1.5-flash"></div>
+      <div class="field"><label>Température</label><input id="cfgTemp" type="number" step="0.1" min="0" max="2" value="0.7"></div>
+    </div>
+    <div class="field"><label>Max tokens</label><input id="cfgMax" type="number" value="2048"></div>
+    <div class="field"><label>Prompt système (optionnel)</label>
+      <input id="cfgSys" placeholder="Tu es un assistant utile pour l'IGEE."></div>
+    <div class="test-result" id="testRes"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" style="flex:1" onclick="closeModal()">Annuler</button>
+      <button class="btn-primary" onclick="saveConfig()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
 
-        function handleKeyDown(e) {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        }
+<!-- ABOUT MODAL -->
+<div class="modal" id="aboutModal">
+  <div class="modal-card">
+    <h3>ⓘ À propos de IGEE AI</h3>
+    <div class="sub">Institut d'Électrotechnique et d'Électronique — Université de Boumerdès</div>
+    <div class="about-grid">
+      <div class="about-item"><b>⚡ Moteur Gemini</b><span>Inférence rapide via l'API Google AI Studio, compatible OpenAI.</span></div>
+      <div class="about-item"><b>🔒 Sécurisé</b><span>Les clés sont stockées localement dans votre navigateur.</span></div>
+      <div class="about-item"><b>📎 Analyse de fichiers</b><span>Joignez du code, des documents et des données — le modèle les lit et les analyse dans le contexte.</span></div>
+      <div class="about-item"><b>💾 Portabilité totale</b><span>Fichier HTML unique. Aucune installation, aucune dépendance, exportation à tout moment.</span></div>
+    </div>
+    <h3 style="font-size:.95rem;margin-top:6px;">⌨️ Raccourcis clavier</h3>
+    <div style="margin-top:8px;">
+      <div class="shortcut-row"><span>Nouvelle conversation</span><span><kbd>Ctrl</kbd> + <kbd>K</kbd></span></div>
+      <div class="shortcut-row"><span>Afficher/Masquer le menu</span><span><kbd>Ctrl</kbd> + <kbd>B</kbd></span></div>
+      <div class="shortcut-row"><span>Fermer la fenêtre</span><span><kbd>Esc</kbd></span></div>
+      <div class="shortcut-row"><span>Envoyer le message</span><span><kbd>Entrée</kbd></span></div>
+      <div class="shortcut-row"><span>Nouvelle ligne</span><span><kbd>Maj</kbd> + <kbd>Entrée</kbd></span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeAbout()">Fermer</button>
+    </div>
+  </div>
+</div>
 
-        async function sendMessage() {
-            const input = document.getElementById('prompt-input');
-            const text = input.value.trim();
-            if (!text && !selectedFile) return; // Autorise l'envoi si juste un fichier est joint
+<script>
+const $=id=>document.getElementById(id);
+// Configuration par défaut pour Gemini
+const DEFAULTS={
+  url:'https://generativelanguage.googleapis.com/v1beta/openai/', 
+  key:'', 
+  model:'gemini-1.5-flash', 
+  temp:0.7,
+  max:2048,
+  sys:''
+};
+let cfg=JSON.parse(localStorage.getItem('igee_cfg')||'null')||{...DEFAULTS};
+let chats=JSON.parse(localStorage.getItem('igee_chats')||'[]');
+let current=null, streaming=false, online=false, models=[], abortCtrl=null, demoIv=null;
+let usage={in:0,out:0};
 
-            // Hide welcome screen
-            const welcomeScreen = document.getElementById('welcome-screen');
-            if (welcomeScreen) welcomeScreen.style.display = 'none';
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+function md(s){return esc(s).replace(/```(\w*)\n?([\s\S]*?)```/g,'<pre><code>$2</code></pre>').replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');}
+function suggest(t){$('inp').value=t;$('inp').focus();$('inp').dispatchEvent(new Event('input'));}
 
-            // Afficher le message de l'utilisateur avec l'indication du fichier
-            const displayMsg = selectedFile ? `📎 [File: ${selectedFile.name}] ${text}` : text;
-            addMessageToUI('user', displayMsg);
-            
-            input.value = '';
-            autoResizeInput();
-            
-            if (!chatHistory[currentChatId]) chatHistory[currentChatId] = [];
-            chatHistory[currentChatId].push({ role: 'user', content: displayMsg });
-            saveHistory();
+/* ===== CHAT STORAGE ===== */
+function saveAll(){localStorage.setItem('igee_chats',JSON.stringify(chats));}
+function renderList(){
+  $('chatList').innerHTML=chats.map((c,i)=>`<div class="chat-item ${current===i?'active':''}" onclick="openChat(${i})">${esc(c.title)}</div>`).join('');
+}
+function newChat(){current=null;renderMsgs();renderList();$('inp').focus();}
+function openChat(i){current=i;renderMsgs();renderList();}
+function renderMsgs(){
+  const msgs=chats[current]?.msgs||[];
+  const showHero=msgs.length===0;
+  $('hero').style.display=showHero?'flex':'none';
+  $('messages').style.display=showHero?'none':'flex';
+  $('messages').innerHTML=msgs.map((m,idx)=>{
+    const atts=m.attachments&&m.attachments.length?'<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">'+m.attachments.map(n=>`<span style="font-size:.72rem;border:1px solid var(--border);border-radius:8px;padding:2px 8px;color:var(--muted);">📎 ${esc(n)}</span>`).join('')+'</div>':'';
+    let actions='';
+    if(!m.streaming&&m.content){
+      actions='<div class="msg-actions">';
+      actions+=`<button class="mact" onclick="copyMsg(${idx})">📋 Copier</button>`;
+      if(m.role==='assistant'&&idx===msgs.length-1)actions+=`<button class="mact" onclick="regenerate()">↻ Régénérer</button>`;
+      actions+='</div>';
+    }
+    return `<div class="msg ${m.role}"><div class="avatar ${m.role==='user'?'u':'a'}">${m.role==='user'?'Vous':'IGEE'}</div><div class="bubble">${m.streaming?'<span class="thinking">Réflexion…</span>':md(m.content)}${atts}${actions}</div></div>`;
+  }).join('');
+  if(msgs.length)$('messages').scrollTop=$('messages').scrollHeight;
+}
 
-            const loadingId = showLoading();
-            document.getElementById('send-btn').disabled = true;
-            document.getElementById('prompt-input').disabled = true;
+/* ===== DEMO MODE (offline fallback) ===== */
+function demoReply(q){
+  const t=q.toLowerCase();let r;
+  if(t.includes('code')||t.includes('python')||t.includes('fonction'))
+    r="Voici un exemple en Python :\n\n```python\ndef saluer(nom):\n    return f\"Bonjour, {nom} ! Bienvenue sur IGEE AI.\"\n\nprint(saluer(\"Directeur\"))\n```\n\n_⚠️ Mode Démo : ceci est une réponse simulée. Connectez-vous à Gemini pour obtenir de vraies réponses._";
+  else if(t.includes('gemini'))
+    r="**Gemini** est un modèle d'IA de Google :\n\n- **Rapide et performant** pour le code et l'analyse.\n- **API compatible OpenAI** (`/v1beta/openai/`)\n- **Gratuit** avec des limites généreuses via Google AI Studio.\n\n_⚠️ Mode Démo : réponse simulée._";
+  else
+    r="Merci pour votre question ! Voici une réponse simulée en **mode démo** pour \""+q.slice(0,60)+"…\"\n\nUne fois connecté à **Gemini**, je fournirai de vraies réponses générées par l'IA en fonction du modèle chargé.\n\n_⚠️ Mode Démo : réponse simulée. Connectez-vous à Gemini pour obtenir de vraies réponses._";
+  return r;
+}
+function stopGen(){if(demoIv){clearInterval(demoIv);demoIv=null;setBusy(false);const m=chats[current]?.msgs;if(m&&m.length&&m[m.length-1].role==='assistant'){m[m.length-1].content=(m[m.length-1].content||'...')+'\n\n_⏹ Génération arrêtée par l\'utilisateur._';m[m.length-1].streaming=false;saveAll();renderMsgs();}}else if(abortCtrl)abortCtrl.abort();}
+function streamDemo(aiMsg){
+  const full=demoReply(chats[current].msgs[chats[current].msgs.length-2].content);
+  let i=0;aiMsg.streaming=false;
+  const iv=demoIv=setInterval(()=>{
+    i+=3+Math.floor(Math.random()*5);
+    aiMsg.content=full.slice(0,i);
+    renderMsgs();
+    if(i>=full.length){clearInterval(iv);demoIv=null;saveAll();setBusy(false);}
+  },40);
+}
 
-            try {
-                // On envoie le texte et le fichier à l'IA
-                const response = await callAI(text || "Analyze this document.", selectedFile);
-                removeLoading(loadingId);
-                addMessageToUI('ai', response);
-                
-                chatHistory[currentChatId].push({ role: 'ai', content: response });
-                saveHistory();
-            } catch (error) {
-                removeLoading(loadingId);
-                addMessageToUI('ai', "❌ Error: Unable to contact the AI. Please check your connection.");
-                console.error(error);
-            } finally {
-                document.getElementById('send-btn').disabled = false;
-                document.getElementById('prompt-input').disabled = false;
-                // Réinitialiser le fichier après l'envoi
-                selectedFile = null;
-                document.getElementById('file-upload').value = '';
-                document.getElementById('prompt-input').placeholder = "Ask IGEE AI a question...";
-            }
-        }
+/* ===== SEND MESSAGE ===== */
+async function sendMsg(){
+  const t=$('inp').value.trim(); if(!t||streaming)return;
+  $('inp').value='';$('inp').style.height='auto';
+  if(current===null){chats.unshift({title:t.slice(0,38)+(t.length>38?'…':''),msgs:[]});current=0;}
+  let full=t;
+  const atts=attachments.filter(a=>a.text);
+  if(atts.length){
+    full=t+"\n\n"+atts.map(a=>"--- Fichier joint : "+a.name+" ---\n"+a.text).join("\n\n");
+  }
+  const attNames=attachments.map(a=>a.name);
+  chats[current].msgs.push({role:'user',content:full,attachments:attNames});
+  attachments=[];renderAttachments();
+  const aiMsg={role:'assistant',content:'',streaming:true};
+  chats[current].msgs.push(aiMsg);
+  renderMsgs();renderList();setBusy(true);
+  abortCtrl=new AbortController();
 
-        function addMessageToUI(role, text) {
-            const container = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${role}`;
-            div.innerHTML = `
-                <div class="avatar">${role === 'user' ? 'U' : 'I'}</div>
-                <div class="message-content">${escapeHTML(text)}</div>
-            `;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
+  if(!online){streamDemo(aiMsg);return;}
 
-        function showLoading() {
-            const container = document.getElementById('chat-container');
-            const id = 'loading-' + Date.now();
-            const div = document.createElement('div');
-            div.className = 'message ai'; div.id = id;
-            div.innerHTML = `<div class="avatar">I</div><div class="typing-dots"><span></span><span></span><span></span></div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-            return id;
-        }
+  try{
+    const history=chats[current].msgs.filter(m=>!m.streaming).map(m=>({role:m.role,content:m.content}));
+    if(cfg.sys)history.unshift({role:'system',content:cfg.sys});
+    
+    // Construction de l'URL pour Gemini (compatible OpenAI)
+    const apiUrl = cfg.url.replace(/\/$/,'')+'/chat/completions';
+    
+    const res=await fetch(apiUrl,{method:'POST',
+      headers:{'Content-Type':'application/json',...(cfg.key?{'Authorization':'Bearer '+cfg.key}:{})},
+      body:JSON.stringify({
+        model:cfg.model||'gemini-1.5-flash',
+        messages:history,
+        temperature:+cfg.temp,
+        max_tokens:+cfg.max,
+        stream:true
+      }),signal:abortCtrl.signal});
+      
+    if(!res.ok) throw new Error('HTTP '+res.status+' — Vérifiez la clé API et l\'URL.');
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+    aiMsg.streaming=false;
+    while(true){
+      const{done,value}=await reader.read(); if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');buf=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data:'))continue;
+        const data=line.slice(5).trim(); if(data==='[DONE]')continue;
+        try{const j=JSON.parse(data);aiMsg.content+=j.choices?.[0]?.delta?.content||'';if(j.usage){addUsage(j.usage.prompt_tokens||0,j.usage.completion_tokens||0);}}catch(e){}
+      }
+      renderMsgs();
+    }
+    if(!aiMsg.content)aiMsg.content='_(Réponse vide du modèle)_';
+  }catch(e){
+    aiMsg.streaming=false;
+    if(e.name==='AbortError'){aiMsg.content=(aiMsg.content||'...')+'\n\n_⏹ Génération arrêtée par l\'utilisateur._';}
+    else{aiMsg.content='❌ **Connexion à Gemini perdue**\n\n`'+esc(e.message)+'`\n\n👉 Ouvrez **⚙ Paramètres** pour vérifier l\'URL du serveur et la clé, ou restez en **Mode Démo** pour explorer l\'interface.';online=false;setDemo(true);}
+  }
+  saveAll();renderMsgs();setBusy(false);
+}
+function setBusy(b){streaming=b;$('sendBtn').innerHTML=b?'⏹':'➤';}
+function setDemo(on){
+  $('demoChip').classList.toggle('off',!on);
+  $('userStatus').textContent=on?'Admin • Mode Démo':'Admin • Gemini Prêt';
+}
 
-        function removeLoading(id) { const el = document.getElementById(id); if (el) el.remove(); }
-        function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
+/* ===== MODEL SELECTOR ===== */
+function fillModels(list){
+  models=list;
+  $('modelSel').innerHTML='<option value="">⚡ — Sélectionner un modèle —</option>'+list.map(m=>`<option value="${esc(m)}" ${m===cfg.model?'selected':''}>⚡ ${esc(m)}</option>`).join('');
+}
+function selectModel(m){
+  cfg.model=m;localStorage.setItem('igee_cfg',JSON.stringify(cfg));
+  $('cfgModel').value=m;
+}
 
-        // COMMUNICATION AVEC GEMINI (AVEC GESTION DES FICHIERS)
-        async function callAI(prompt, file = null) {
-            if (AI_BACKEND === "gemini") {
-                if (!window.GEMINI_API_KEY) throw new Error("Missing API Key. Check config.js.");
-                
-                const parts = [{ text: prompt }];
-                
-                // Si un fichier est joint, on le convertit en Base64
-                if (file) {
-                    const base64Data = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => resolve(reader.result.split(',')[1]); // On enlève le préfixe
-                        reader.onerror = error => reject(error);
-                    });
-                    
-                    parts.push({
-                        inlineData: {
-                            mimeType: file.type,
-                            data: base64Data
-                        }
-                    });
-                }
+/* ===== SETTINGS MODAL ===== */
+function openModal(){$('cfgUrl').value=cfg.url;$('cfgKey').value=cfg.key;$('cfgModel').value=cfg.model;$('cfgTemp').value=cfg.temp;$('cfgMax').value=cfg.max;$('cfgSys').value=cfg.sys||'';$('modal').classList.add('open');}
+function closeModal(){$('modal').classList.remove('open');}
+function saveConfig(){
+  cfg={url:$('cfgUrl').value.trim()||DEFAULTS.url,key:$('cfgKey').value.trim(),model:$('cfgModel').value.trim()||DEFAULTS.model,temp:+$('cfgTemp').value||0.7,max:+$('cfgMax').value||2048,sys:$('cfgSys').value.trim()};
+  localStorage.setItem('igee_cfg',JSON.stringify(cfg));
+  $('endpointTxt').textContent=cfg.url;
+  closeModal();testConnection();
+}
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${window.GEMINI_API_KEY}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
-                });
-                
-                if (!response.ok) throw new Error("API Error");
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } 
-        }
+/* ===== CONNECTION TEST ===== */
+async function testConnection(quiet){
+  const r=$('testRes');
+  try{
+    // On utilise l'endpoint des modèles de Gemini
+    const apiUrl = cfg.url.replace(/\/$/,'')+'/models';
+    const res=await fetch(apiUrl,{headers:cfg.key?{'Authorization':'Bearer '+cfg.key}:{}});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const j=await res.json();
+    // Gemini renvoie parfois une structure différente, on s'assure de récupérer les noms
+    let list = (j.data||j.models||[]).map(m => m.id || m.name.split('/').pop());
+    
+    // Si la liste est vide, on met un modèle par défaut pour ne pas bloquer
+    if(list.length === 0) list = [cfg.model || 'gemini-1.5-flash'];
+    
+    if(!cfg.model&&list.length)cfg.model=list[0];
+    fillModels(list);selectModel(cfg.model);
+    online=true;setDemo(false);
+    $('statModel').textContent=cfg.model||list[0]||'—';
+    if(r&&!quiet){r.className='test-result ok';r.textContent='✅ Connecté à Gemini ! Modèles détectés : '+list.join(', ');}
+  }catch(e){
+    online=false;setDemo(true);fillModels(cfg.model?[cfg.model]:[]);
+    if(r&&!quiet){r.className='test-result err';r.textContent='❌ Gemini inaccessible ('+e.message+') — Le mode Démo est actif. L\'interface reste utilisable.';}
+  }
+}
 
-        function saveHistory() { localStorage.setItem('igee_ai_history', JSON.stringify(chatHistory)); renderHistory(); }
+/* ===== VOICE INPUT ===== */
+let rec=null,recOn=false;
+function toggleMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('La reconnaissance vocale n\'est pas supportée par ce navigateur. Essayez Chrome ou Edge.');return;}
+  if(!rec){
+    rec=new SR();rec.lang='fr-FR';rec.interimResults=false;
+    rec.onresult=e=>{$('inp').value+=' '+e.results[0][0].transcript;$('inp').dispatchEvent(new Event('input'));};
+    rec.onend=()=>{recOn=false;$('micBtn').classList.remove('rec');};
+  }
+  if(recOn){rec.stop();return;}
+  rec.start();recOn=true;$('micBtn').classList.add('rec');
+}
 
-        function renderHistory() {
-            const container = document.getElementById('chat-history');
-            container.innerHTML = '';
-            const sortedIds = Object.keys(chatHistory).sort((a,b) => b - a);
-            sortedIds.forEach(id => {
-                const messages = chatHistory[id];
-                if (messages.length === 0) return;
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.textContent = messages[0].content.substring(0, 30) + '...';
-                div.onclick = () => loadChat(id);
-                container.appendChild(div);
-            });
-        }
+$('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+$('inp').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px';});
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
 
-        function startNewChat() {
-            currentChatId = Date.now().toString();
-            chatHistory[currentChatId] = [];
-            const container = document.getElementById('chat-container');
-            container.innerHTML = `
-                <div class="welcome-screen" id="welcome-screen">
-                    <div class="logo-container">
-                        <div class="igee-logo-3d"><svg viewBox="0 0 512 512"><text x="256" y="295" font-family="'Segoe UI',Arial,sans-serif" font-size="170" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-6">IGEE</text></svg></div>
-                        <div class="ai-logo-3d"><svg viewBox="0 0 512 512"><text x="256" y="295" font-family="'Segoe UI',Arial,sans-serif" font-size="200" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-6">AI</text></svg></div>
-                    </div>
-                    <h1 class="welcome-title">How can I help you today?</h1>
-                    <p class="welcome-subtitle">I am your intelligent assistant for research, projects, and development at IGEE.</p>
-                </div>
-            `;
-            renderHistory();
-            if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
-        }
+/* ===== FILE ATTACHMENTS ===== */
+let attachments=[];
+const TEXT_EXT=['txt','md','py','js','ts','json','csv','html','css','xml','log','ini','cfg','yaml','yml','sh','bat','c','cpp','h','java','sql','rtf','srt'];
+function fmtSize(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';}
+function handleFiles(fileList){
+  [...fileList].forEach(f=>{
+    const ext=(f.name.split('.').pop()||'').toLowerCase();
+    const isText=f.type.startsWith('text/')||TEXT_EXT.includes(ext);
+    const isImage=f.type.startsWith('image/');
+    const att={name:f.name,size:fmtSize(f.size),text:null,thumb:null};
+    if(isText&&f.size<=2*1024*1024){
+      const rd=new FileReader();
+      rd.onload=e=>{att.text=String(e.target.result).slice(0,20000);renderAttachments();};
+      rd.readAsText(f);
+    }else if(isImage&&f.size<=5*1024*1024){
+      const rd=new FileReader();
+      rd.onload=e=>{att.thumb=e.target.result;renderAttachments();};
+      rd.readAsDataURL(f);
+    }
+    attachments.push(att);
+  });
+  $('fileInput').value='';
+  renderAttachments();
+}
+function removeAtt(i){attachments.splice(i,1);renderAttachments();}
+function renderAttachments(){
+  $('attachments').innerHTML=attachments.map((a,i)=>
+    `<div class="att-chip">${a.thumb?`<img src="${a.thumb}">`:'📄'}<span class="nm" title="${esc(a.name)}">${esc(a.name)}</span><span class="sz">${a.size}${a.text?' • lu ✓':''}</span><button class="rm" onclick="removeAtt(${i})">✕</button></div>`
+  ).join('');
+}
+/* drag & drop */
+const ib=$('inputBox');
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();ib.classList.add('drag');$('dragHint').style.display='block';}));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();if(ev==='drop'&&e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);if(!ib.matches(':hover')){ib.classList.remove('drag');$('dragHint').style.display='none';}}));
 
-        function loadChat(id) {
-            currentChatId = id;
-            const container = document.getElementById('chat-container');
-            container.innerHTML = '';
-            chatHistory[id].forEach(msg => addMessageToUI(msg.role, msg.content));
-            if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('active');
-        }
-    </script>
+/* ===== PRO FEATURES ===== */
+function toast(msg){let t=$('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t);}t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
+function copyMsg(i){
+  const m=chats[current]?.msgs[i]; if(!m)return;
+  (navigator.clipboard?navigator.clipboard.writeText(m.content):Promise.reject()).then(()=>toast('📋 Message copié !')).catch(()=>{const ta=document.createElement('textarea');ta.value=m.content;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('📋 Message copié !');});
+}
+function regenerate(){
+  const m=chats[current]?.msgs; if(!m||m.length<2)return;
+  if(m[m.length-1].role==='assistant')m.pop();
+  const lastUser=m[m.length-1].content;
+  saveAll();renderMsgs();
+  $('inp').value=lastUser;sendMsg();
+}
+function addUsage(p,c){
+  usage.in+=p;usage.out+=c;
+  $('statsBar').style.display='flex';
+  $('statIn').textContent=usage.in.toLocaleString();
+  $('statOut').textContent=usage.out.toLocaleString();
+  $('statTot').textContent=(usage.in+usage.out).toLocaleString();
+  $('statModel').textContent=cfg.model||'—';
+}
+function exportChat(){
+  const c=chats[current]; if(!c){toast('⚠️ Aucune conversation à exporter');return;}
+  let mdOut='# IGEE AI — Conversation\n\n';
+  c.msgs.forEach(m=>{mdOut+='## '+(m.role==='user'?'Vous':'IGEE AI')+'\n\n'+(m.attachments?m.attachments.map(a=>'📎 '+a).join(', ')+'\n\n':'')+m.content+'\n\n---\n\n';});
+  downloadFile((c.title||'conversation').replace(/[^\w\s-]/g,'').trim()+'.md',mdOut,'text/markdown');
+}
+function exportAll(){
+  if(!chats.length){toast('⚠️ Aucune conversation à exporter');return;}
+  downloadFile('igee-ai-all-chats.json',JSON.stringify(chats,null,2),'application/json');
+  toast('📦 Toutes les conversations exportées !');
+}
+function clearHistory(){
+  if(!chats.length){toast('⚠️ L\'historique est déjà vide');return;}
+  if(confirm('Supprimer TOUTES les conversations ? Cette action est irréversible.')){chats=[];current=null;saveAll();renderList();renderMsgs();toast('🗑 Historique effacé');}
+}
+function downloadFile(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  const l=document.body.classList.contains('light');
+  $('themeBtn').textContent=l?'☀️':'🌙';
+  localStorage.setItem('igee_theme',l?'1':'');
+  toast(l?'☀️ Thème clair':'🌙 Thème sombre');
+}
+if(localStorage.getItem('igee_theme')){document.body.classList.add('light');}
+function openAbout(){$('aboutModal').classList.add('open');}
+function closeAbout(){$('aboutModal').classList.remove('open');}
+
+/* keyboard shortcuts */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();closeAbout();}
+  if(e.ctrlKey&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}
+  if(e.ctrlKey&&e.key.toLowerCase()==='b'){e.preventDefault();$('sidebar').classList.toggle('closed');}
+});
+
+/* auto-reconnect every 45s */
+setInterval(()=>{if(!streaming)testConnection(true);},45000);
+
+/* ===== INIT ===== */
+renderList();renderMsgs();
+$('endpointTxt').textContent=cfg.url;
+if(cfg.model)fillModels([cfg.model]);
+setTimeout(testConnection,400);
+</script>
 </body>
 </html>
